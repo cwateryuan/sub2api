@@ -48,6 +48,13 @@
 
         <!-- Nav Actions -->
         <div class="flex items-center gap-3">
+          <router-link
+            to="/models"
+            class="hidden rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-dark-300 dark:hover:bg-dark-800 dark:hover:text-white sm:inline-flex"
+          >
+            模型广场
+          </router-link>
+
           <!-- Language Switcher -->
           <LocaleSwitcher />
 

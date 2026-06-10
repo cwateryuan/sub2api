@@ -1,0 +1,69 @@
+{
+  "models": [
+    {
+      "id": "gpt-5.5",
+      "provider": "OpenAI",
+      "category": "通用对话",
+      "family": "GPT",
+      "description": "OpenAI 高性能文本模型，适合复杂问答、代码、工具调用和通用智能体场景。",
+      "featured": true,
+      "priceFields": [
+        { "label": "输入", "price": "¥5.00 / M token" },
+        { "label": "输出", "price": "¥30.00 / M token" },
+        { "label": "缓存读取", "price": "¥0.50 / M token" }
+      ],
+      "badges": [
+        { "label": "codexPro", "multiplier": "0.6x", "description": "正价PRO号池" },
+        { "label": "codex分组", "multiplier": "0.3x", "description": "日抛号池" }
+      ]
+    },
+	{
+      "id": "gpt-5.4",
+      "provider": "OpenAI",
+      "category": "通用对话",
+      "family": "GPT",
+      "description": "OpenAI 高性能文本模型，适合复杂问答、代码、工具调用和通用智能体场景。",
+      "featured": true,
+      "priceFields": [
+        { "label": "输入", "price": "¥2.5 / M token" },
+        { "label": "输出", "price": "¥15 / M token" },
+        { "label": "缓存读取", "price": "¥0.25 / M token" }
+      ],
+      "badges": [
+        { "label": "codexPro", "multiplier": "0.6x", "description": "正价PRO号池" },
+        { "label": "codex分组", "multiplier": "0.3x", "description": "日抛号池" }
+      ]
+    },
+    {
+      "id": "gpt-5.4-mini",
+      "provider": "OpenAI",
+      "category": "轻量模型",
+      "family": "GPT",
+      "description": "低延迟轻量文本模型，适合高频请求、摘要、分类和简单对话。",
+      "priceFields": [
+        { "label": "输入", "price": "¥0.75 / M token" },
+        { "label": "输出", "price": "¥4.5 / M token" },
+        { "label": "缓存读取", "price": "¥0.0075 / M token" }
+      ],
+      "badges": [
+        { "label": "codexPro", "multiplier": "0.6x", "description": "正价PRO号池" },
+        { "label": "codex分组", "multiplier": "0.3x", "description": "日抛号池" }
+      ]
+    },
+    {
+      "id": "gpt-image-2",
+      "provider": "OpenAI",
+      "category": "图片生成",
+      "family": "gpt-image-2",
+      "description": "图片生成预览模型，适合海报、商品图、创意视觉和快速出图。",
+      "priceFields": [
+        { "label": "1K 图片", "price": "¥0.05 / 张" },
+        { "label": "2K 图片", "price": "¥0.07 / 张" },
+        { "label": "4K 图片", "price": "¥0.15 / 张" }
+      ],
+      "badges": [
+        { "label": "生图专用", "multiplier": "1x", "description": "CN2线路加速服务" }
+      ]
+    }
+  ]
+}

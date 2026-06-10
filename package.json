@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "scripts": {
+    "all": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/local-build-all.ps1"
+  }
+}
