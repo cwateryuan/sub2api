@@ -59,7 +59,7 @@
       "priceFields": [
         { "label": "1K 图片", "price": "¥0.05 / 张" },
         { "label": "2K 图片", "price": "¥0.07 / 张" },
-        { "label": "4K 图片", "price": "¥0.15 / 张" }
+        { "label": "4K 图片", "price": "¥0.10 / 张" }
       ],
       "badges": [
         { "label": "生图专用", "multiplier": "1x", "description": "CN2线路加速服务" }
