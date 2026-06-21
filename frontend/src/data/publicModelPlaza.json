@@ -14,7 +14,7 @@
       ],
       "badges": [
         { "label": "codexPro", "multiplier": "0.6x", "description": "正价PRO号池" },
-        { "label": "codex分组", "multiplier": "0.3x", "description": "日抛号池" }
+        { "label": "codex分组", "multiplier": "0.25x", "description": "日抛号池" }
       ]
     },
 	{
@@ -31,7 +31,7 @@
       ],
       "badges": [
         { "label": "codexPro", "multiplier": "0.6x", "description": "正价PRO号池" },
-        { "label": "codex分组", "multiplier": "0.3x", "description": "日抛号池" }
+        { "label": "codex分组", "multiplier": "0.25x", "description": "日抛号池" }
       ]
     },
     {
@@ -47,7 +47,7 @@
       ],
       "badges": [
         { "label": "codexPro", "multiplier": "0.6x", "description": "正价PRO号池" },
-        { "label": "codex分组", "multiplier": "0.3x", "description": "日抛号池" }
+        { "label": "codex分组", "multiplier": "0.25x", "description": "日抛号池" }
       ]
     },
     {
@@ -62,7 +62,8 @@
         { "label": "4K 图片", "price": "¥0.10 / 张" }
       ],
       "badges": [
-        { "label": "生图专用", "multiplier": "1x", "description": "CN2线路加速服务" }
+        { "label": "生图专用", "multiplier": "1x", "description": "CN2线路加速服务" },
+		 { "label": "廉价版", "multiplier": "1x", "description": "普通线路，1K 0.015元" }
       ]
     }
   ]

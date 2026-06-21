@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>97API 生图接口对接文档</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --text: #162033;
+      --muted: #667085;
+      --line: #d9e0ea;
+      --brand: #1463ff;
+      --brand-soft: #eaf1ff;
+      --code-bg: #101828;
+      --code-text: #f7fafc;
+      --ok: #087443;
+      --warn: #a15c00;
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .site-header {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(16, 31, 34, 0.98);
+      backdrop-filter: blur(12px);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px 24px;
+    }
+
+    .brand {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 12px;
+      color: #fff;
+    }
+
+    .brand-mark {
+      display: flex;
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #0e7490;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .brand-mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #fff;
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-title {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .brand-subtitle {
+      color: #94a3b8;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .top-actions {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .top-actions a {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 999px;
+      color: #e2e8f0;
+      font-size: 14px;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .top-actions a:hover {
+      border-color: rgba(34, 211, 238, 0.65);
+      color: #fff;
+    }
+
+    .hero {
+      background: #0f172a;
+      color: #fff;
+      padding: 48px 24px 40px;
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.25;
+    }
+
+    h1 {
+      font-size: 36px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-top: 34px;
+      padding-top: 10px;
+      font-size: 24px;
+    }
+
+    h3 {
+      margin-top: 22px;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 10px 0;
+    }
+
+    a {
+      color: var(--brand);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    main {
+      padding: 26px 24px 56px;
+    }
+
+    .subtitle {
+      max-width: 760px;
+      margin-top: 12px;
+      color: #cbd5e1;
+      font-size: 16px;
+    }
+
+    .notice {
+      margin-top: 18px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: var(--radius);
+      color: #e2e8f0;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .section {
+      margin-top: 22px;
+      padding: 24px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .endpoint {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 14px 0;
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      background: var(--brand-soft);
+      border: 1px solid #cfe0ff;
+    }
+
+    .method {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      color: #fff;
+      background: var(--brand);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      color: #344054;
+      background: #f2f5f9;
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 5px;
+      color: #0f3f8c;
+      background: #eef4ff;
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 0.94em;
+    }
+
+    pre {
+      position: relative;
+      margin: 14px 0 0;
+      padding: 16px;
+      overflow-x: auto;
+      border-radius: var(--radius);
+      color: var(--code-text);
+      background: var(--code-bg);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    pre code {
+      padding: 0;
+      color: inherit;
+      background: transparent;
+      font-size: inherit;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ok);
+      background: #ecfdf3;
+      border: 1px solid #abefc6;
+    }
+
+    .warning {
+      border-color: #fedf89;
+      background: #fffaeb;
+      color: #7a4b00;
+    }
+
+    .warning strong {
+      color: var(--warn);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .toc {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .toc a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      color: #dbeafe;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .top-actions {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .top-actions a {
+        flex: 1;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section {
+        padding: 18px;
+      }
+
+      th, td {
+        padding: 9px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="topbar">
+      <a class="brand" href="/home">
+        <span class="brand-mark">
+          <img src="/logo.png" alt="97API" onerror="this.replaceWith(document.createTextNode('9'))">
+        </span>
+        <span class="brand-text">
+          <span class="brand-title">97API</span>
+          <span class="brand-subtitle">Image API Docs</span>
+        </span>
+      </a>
+      <nav class="top-actions" aria-label="顶部导航">
+        <a href="/models">模型广场</a>
+        <a href="/login">登录控制台</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <h1>97API 生图接口对接文档</h1>
+      <p class="subtitle">本文档说明文生图与图生图接口的请求地址、鉴权方式、参数格式、返回结构和尺寸约束。</p>
+      <div class="notice">廉价渠道不支持2K 4K，传参也只能生成1K.请一定阅读尺寸规则</div>
+      <nav class="toc" aria-label="目录">
+        <a href="#auth">鉴权</a>
+        <a href="#generation">文生图</a>
+        <a href="#edit">图生图</a>
+        <a href="#response">返回格式</a>
+        <a href="#sizes">尺寸规则</a>
+      </nav>
+    </div>
+  </section>
+
+  <main>
+    <div class="wrap">
+      <section id="auth" class="section">
+        <h2>鉴权与通用 Header</h2>
+        <p>请求需要携带 Bearer Token。请将示例中的 <code>YOUR_API_KEY</code> 替换为实际密钥。</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Header</th>
+              <th>Value</th>
+              <th>说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Authorization</code></td>
+              <td><code>Bearer YOUR_API_KEY</code></td>
+              <td>接口鉴权。</td>
+            </tr>
+            <tr>
+              <td><code>Accept</code></td>
+              <td><code>application/json</code></td>
+              <td>建议固定为 JSON 响应。</td>
+            </tr>
+            <tr>
+              <td><code>Content-Type</code></td>
+              <td><code>application/json</code> 或 <code>multipart/form-data</code></td>
+              <td>文生图使用 JSON；图生图支持 JSON 图片 URL 或表单上传图片。</td>
+            </tr>
+			
+          </tbody>
+        </table>
+      </section>
+
+      <section id="generation" class="section">
+        <h2>文生图接口</h2>
+        <div class="endpoint">
+          <span class="method">POST</span>
+          <a href="https://images.97api.com/v1/images/generations">https://images.97api.com/v1/images/generations</a>
+          <span class="tag">application/json</span>
+        </div>
+        <h3>请求示例</h3>
+        <pre><code>{
+  "model": "gpt-image-2",
+  "prompt": "A black-and-white fashion editorial photo of a male model with a lean, defined torso, sitting on a tall stool while leaning back with his legs extended forward. He wears an oversized black suit with the blazer open, revealing his abs, paired with wide-leg trousers and white sneakers. Dramatic studio lighting creates strong shadows and a minimalist, high-contrast atmosphere. The pose appears weightless and artistic, conveying a modern, avant-garde aesthetic.",
+  "aspect_ratio": "1:1",
+  "size": "1254x1254",
+  "quality": "high",
+  "output_format": "webp",
+  "n": 1,
+  "response_format": "url"
+}</code></pre>
+      </section>
+
+      <section id="edit" class="section">
+        <h2>图生图接口</h2>
+        <div class="endpoint">
+          <span class="method">POST</span>
+          <a href="https://images.97api.com/v1/images/edits">https://images.97api.com/v1/images/edits</a>
+          <span class="tag">JSON 或 Multipart</span>
+        </div>
+
+        <h3>JSON 图片 URL 请求</h3>
+        <p>当输入图片已在公网可访问时，可使用 <code>images</code> 数组传入图片 URL。</p>
+        <pre><code>{
+  "model": "gpt-image-2",
+  "prompt": "把男性换成女性",
+  "aspect_ratio": "1:1",
+  "size": "1254x1254",
+  "quality": "high",
+  "output_format": "webp",
+  "n": 2,
+  "response_format": "url",
+  "images": [
+    {
+      "image_url": "https://webimg.97api.com/images/2026/06/21/1782026038_000603e525f0cbf64e0cfdbb0f1a9026.png"
+    }
+  ]
+}</code></pre>
+
+        <h3>Multipart 表单上传请求</h3>
+        <p>当需要直接上传本地图片时，使用 <code>multipart/form-data</code>。字段名可参考下表。</p>
+        <table>
+          <thead>
+            <tr>
+              <th>字段</th>
+              <th>示例值</th>
+              <th>说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>model</code></td>
+              <td><code>gpt-image-2</code></td>
+              <td>图片模型。</td>
+            </tr>
+            <tr>
+              <td><code>prompt</code></td>
+              <td><code>把男性换成女性</code></td>
+              <td>编辑指令。</td>
+            </tr>
+            <tr>
+              <td><code>aspect_ratio</code></td>
+              <td><code>1:1</code></td>
+              <td>必须与 <code>size</code> 匹配。</td>
+            </tr>
+            <tr>
+              <td><code>size</code></td>
+              <td><code>1254x1254</code></td>
+              <td>输出尺寸。</td>
+            </tr>
+            <tr>
+              <td><code>quality</code></td>
+              <td><code>high</code></td>
+              <td>图片质量。</td>
+            </tr>
+            <tr>
+              <td><code>response_format</code></td>
+              <td><code>url</code></td>
+              <td>返回图片 URL。</td>
+            </tr>
+            <tr>
+              <td><code>image</code></td>
+              <td><code>image.webp</code></td>
+              <td>上传的输入图片文件。</td>
+            </tr>
+            <tr>
+              <td><code>n</code></td>
+              <td><code>2</code></td>
+              <td>生成数量。</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>curl 示例</h3>
+        <pre><code>curl -X POST "https://images.97api.com/v1/images/edits" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Accept: application/json" \
+  -F "model=gpt-image-2" \
+  -F "prompt=把男性换成女性" \
+  -F "aspect_ratio=1:1" \
+  -F "size=1254x1254" \
+  -F "quality=high" \
+  -F "response_format=url" \
+  -F "n=2" \
+  -F "image=@./image.webp"</code></pre>
+      </section>
+
+      <section class="section">
+        <h2>参数说明</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>参数</th>
+              <th>类型</th>
+              <th>必填</th>
+              <th>说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>model</code></td>
+              <td>string</td>
+              <td>是</td>
+              <td>当前使用 <code>gpt-image-2</code>。</td>
+            </tr>
+            <tr>
+              <td><code>prompt</code></td>
+              <td>string</td>
+              <td>是</td>
+              <td>文生图提示词或图生图编辑指令。</td>
+            </tr>
+            <tr>
+              <td><code>aspect_ratio</code></td>
+              <td>string</td>
+              <td>是</td>
+              <td>画幅比例，只支持本文档列出的枚举值。</td>
+            </tr>
+            <tr>
+              <td><code>size</code></td>
+              <td>string</td>
+              <td>是</td>
+              <td>输出尺寸，必须与 <code>aspect_ratio</code> 对应。</td>
+            </tr>
+            <tr>
+              <td><code>quality</code></td>
+              <td>string</td>
+              <td>否</td>
+              <td>图片质量，常用值为 <code>high</code>。</td>
+            </tr>
+            <tr>
+              <td><code>output_format</code></td>
+              <td>string</td>
+              <td>否</td>
+              <td>输出图片格式，例如 <code>webp</code>。</td>
+            </tr>
+            <tr>
+              <td><code>n</code></td>
+              <td>number</td>
+              <td>否</td>
+              <td>生成数量。</td>
+            </tr>
+            <tr>
+              <td><code>response_format</code></td>
+              <td>string</td>
+              <td>否</td>
+              <td>使用 <code>url</code> 时返回图片链接。</td>
+            </tr>
+            <tr>
+              <td><code>images</code></td>
+              <td>array</td>
+              <td>图生图 JSON 请求必填</td>
+              <td>图片 URL 数组，格式为 <code>{"image_url": "https://..."}</code>。</td>
+            </tr>
+            <tr>
+              <td><code>image</code></td>
+              <td>file</td>
+              <td>图生图 Multipart 请求必填</td>
+              <td>上传的输入图片文件。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="response" class="section">
+        <h2>返回格式</h2>
+        <p>返回中的 <code>data</code> 为图片结果数组；当 <code>response_format</code> 为 <code>url</code> 时，每个结果包含 <code>url</code>。</p>
+        <pre><code>{
+  "created": 1782028736,
+  "data": [
+    {
+      "url": "https://webimg.97api.com/images/2026/06/21/1782028987_52a0f19d580b507c26814a6002e9174f.png",
+      "revised_prompt": "把男性换成女性"
+    },
+    {
+      "url": "https://webimg.97api.com/images/2026/06/21/1782028995_192617203cc9fffc0e30c79a0ef302ee.png",
+      "revised_prompt": "把男性换成女性"
+    }
+  ],
+  "usage": {
+    "input_tokens": 2468,
+    "output_tokens": 6500,
+    "total_tokens": 8968,
+    "input_tokens_details": {
+      "text_tokens": 5,
+      "image_tokens": 2463,
+      "cached_tokens": 0
+    },
+    "output_tokens_details": {
+      "text_tokens": 0,
+      "image_tokens": 6500,
+      "reasoning_tokens": 0
+    }
+  }
+}</code></pre>
+      </section>
+
+      <section id="sizes" class="section">
+        <h2>廉价渠道尺寸规则</h2>
+        <div class="section warning" style="margin-top: 12px;">
+          <p><strong>重要：</strong><code>aspect_ratio</code> 和 <code>size</code> 只支持下表组合。提示词中不要再写类似“生成 1024x1024 图片”“16:9 构图”等尺寸限制，否则容易与接口参数冲突。</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>aspect_ratio</th>
+              <th>size</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>1:1</code></td>
+              <td><code>1254x1254</code></td>
+            </tr>
+            <tr>
+              <td><code>16:9</code></td>
+              <td><code>1666x944</code></td>
+            </tr>
+            <tr>
+              <td><code>9:16</code></td>
+              <td><code>944x1665</code></td>
+            </tr>
+            <tr>
+              <td><code>2:3</code></td>
+              <td><code>1024x1536</code></td>
+            </tr>
+            <tr>
+              <td><code>3:2</code></td>
+              <td><code>1536x1024</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h2>调用建议</h2>
+        <div class="grid">
+          <div>
+            <h3>同步超时</h3>
+            <p class="muted">生图可能超过 60 秒，调用方、反向代理和网关的超时时间建议统一设置到 120-300 秒（廉价渠道只支持120s）。</p>
+          </div>
+          <div>
+            <h3>图片 URL</h3>
+            <p class="muted">图生图 JSON 请求中的 <code>image_url</code> 需要可公网访问，且服务端能正常下载。</p>
+          </div>
+          <div>
+            <h3>数量 n</h3>
+            <p class="muted">多图生成会增加耗时。业务上如无必要，建议先使用 <code>n=1</code>。</p>
+          </div>
+          <div>
+            <h3>密钥安全</h3>
+            <p class="muted">不要把真实 API Key 写入前端页面或公开仓库，建议通过服务端转发请求。</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
