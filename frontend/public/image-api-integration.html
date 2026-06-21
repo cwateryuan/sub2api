@@ -451,7 +451,7 @@
         </div>
 
         <h3>JSON 图片 URL 请求</h3>
-        <p>当输入图片已在公网可访问时，可使用 <code>images</code> 数组传入图片 URL。</p>
+        <p>当输入图片已在公网可访问时，可使用 <code>images</code> 数组传入图片 URL。建议4张左右，太多失败率高</p>
         <pre><code>{
   "model": "gpt-image-2",
   "prompt": "把男性换成女性",
@@ -646,40 +646,47 @@
       </section>
 
       <section id="sizes" class="section">
-        <h2>廉价渠道尺寸规则</h2>
+        <h2>尺寸规则(廉价版与官参版)</h2>
         <div class="section warning" style="margin-top: 12px;">
-          <p><strong>重要：</strong><code>aspect_ratio</code> 和 <code>size</code> 只支持下表组合。提示词中不要再写类似“生成 1024x1024 图片”“16:9 构图”等尺寸限制，否则容易与接口参数冲突。</p>
+          <p><strong>重要：</strong>廉价渠道的 <code>aspect_ratio</code> 和 <code>size</code> 只支持下表“size(廉价版)”组合。官参版可按官方 <code>gpt-image-2</code> 尺寸规则传参，右侧列为常用对应尺寸。提示词中不要再写类似“生成 1024x1024 图片”“16:9 构图”等尺寸限制，否则容易与接口参数冲突。</p>
         </div>
         <table>
           <thead>
             <tr>
               <th>aspect_ratio</th>
-              <th>size</th>
+              <th>size(廉价版)</th>
+              <th>size(官参版)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td><code>1:1</code></td>
               <td><code>1254x1254</code></td>
+              <td><code>1024x1024</code> / <code>2048x2048</code></td>
             </tr>
             <tr>
               <td><code>16:9</code></td>
               <td><code>1666x944</code></td>
+              <td><code>2048x1152</code> / <code>3840x2160</code></td>
             </tr>
             <tr>
               <td><code>9:16</code></td>
               <td><code>944x1665</code></td>
+              <td><code>2160x3840</code></td>
             </tr>
             <tr>
               <td><code>2:3</code></td>
+              <td><code>1024x1536</code></td>
               <td><code>1024x1536</code></td>
             </tr>
             <tr>
               <td><code>3:2</code></td>
               <td><code>1536x1024</code></td>
+              <td><code>1536x1024</code></td>
             </tr>
           </tbody>
         </table>
+        <p class="muted">官参版说明：OpenAI 官方文档中，<code>gpt-image-2</code> 的 <code>size</code> 支持满足约束的任意分辨率，也支持 <code>auto</code>；上表仅列常用比例的推荐写法。</p>
       </section>
 
       <section class="section">
