@@ -400,6 +400,16 @@ func TestBuildContentModerationLog_RedactsInputExcerpt(t *testing.T) {
 	require.Contains(t, log.InputExcerpt, "[已脱敏]")
 }
 
+func TestBuildContentModerationLog_KeepsLongInputExcerpt(t *testing.T) {
+	svc := &ContentModerationService{}
+	cfg := defaultContentModerationConfig()
+	text := strings.Repeat("误杀排查摘要", 80)
+
+	log := svc.buildLog(ContentModerationCheckInput{}, cfg, ContentModerationActionKeywordBlock, true, contentModerationKeywordCategory, 1, nil, text, nil, nil, "")
+
+	require.Greater(t, len([]rune(log.InputExcerpt)), 240)
+	require.Equal(t, text, log.InputExcerpt)
+}
 func TestRedactContentModerationSecrets_LongHexAndTokens(t *testing.T) {
 	input := "你哈市多大事cf5bbdc4cd508f3aaf0d2070d529d4a4ac29099f8ecc357f696df28e1df91554 token=abc123456789xyz Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signaturepart https://example.com/private/path?token=abc123"
 
