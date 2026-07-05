@@ -1,9 +1,16 @@
 package handler
 
 import (
+	"context"
+	"encoding/json"
 	"html"
+	"io"
 	"net/http"
+	"net/url"
+	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/handler/dto"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/response"
@@ -11,6 +18,12 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/service"
 
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	defaultModelPriceFeedURL = "https://jiankong.97api.com/price.json"
+	modelPriceFeedMaxBytes   = 2 * 1024 * 1024
+	modelPriceFeedTimeout    = 10 * time.Second
 )
 
 // SettingHandler 公开设置处理器（无需认证）
@@ -104,6 +117,76 @@ func (h *SettingHandler) GetPublicSettings(c *gin.Context) {
 
 		AllowUserViewErrorRequests: settings.AllowUserViewErrorRequests,
 	})
+}
+
+// GetModelPriceFeed proxies the public model price feed from a fixed server-side URL.
+// GET /api/v1/settings/model-price-feed
+func (h *SettingHandler) GetModelPriceFeed(c *gin.Context) {
+	setNoStoreHeaders(c)
+
+	feedURL := strings.TrimSpace(os.Getenv("MODEL_PRICE_FEED_URL"))
+	if feedURL == "" {
+		feedURL = defaultModelPriceFeedURL
+	}
+
+	parsed, err := url.Parse(feedURL)
+	if err != nil || parsed.Host == "" || (parsed.Scheme != "http" && parsed.Scheme != "https") {
+		response.Error(c, http.StatusBadGateway, "model price feed url is invalid")
+		return
+	}
+
+	q := parsed.Query()
+	q.Set("_", strconv.FormatInt(time.Now().UnixNano(), 10))
+	parsed.RawQuery = q.Encode()
+
+	ctx, cancel := context.WithTimeout(c.Request.Context(), modelPriceFeedTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, parsed.String(), nil)
+	if err != nil {
+		response.Error(c, http.StatusBadGateway, "model price feed request is invalid")
+		return
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Cache-Control", "no-cache")
+	req.Header.Set("Pragma", "no-cache")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		response.Error(c, http.StatusBadGateway, "failed to fetch model price feed")
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		response.Error(c, http.StatusBadGateway, "model price feed returned non-200 status")
+		return
+	}
+
+	body, err := io.ReadAll(io.LimitReader(resp.Body, modelPriceFeedMaxBytes+1))
+	if err != nil {
+		response.Error(c, http.StatusBadGateway, "failed to read model price feed")
+		return
+	}
+	if len(body) > modelPriceFeedMaxBytes {
+		response.Error(c, http.StatusBadGateway, "model price feed is too large")
+		return
+	}
+
+	var payload json.RawMessage
+	if err := json.Unmarshal(body, &payload); err != nil {
+		response.Error(c, http.StatusBadGateway, "model price feed is not valid json")
+		return
+	}
+
+	response.Success(c, payload)
+}
+
+func setNoStoreHeaders(c *gin.Context) {
+	c.Header("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0")
+	c.Header("Pragma", "no-cache")
+	c.Header("Expires", "0")
+	c.Header("X-Accel-Expires", "0")
 }
 
 // UnsubscribeNotificationEmail handles optional notification email opt-outs.

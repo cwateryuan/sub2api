@@ -11,7 +11,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="搜索模型、平台或渠道..."
+            placeholder="搜索模型、平台或分组..."
             class="input pl-10"
           />
         </div>
@@ -27,7 +27,7 @@
       </div>
 
       <div class="rounded-lg border border-amber-300/50 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
-        实际扣费等于官网价格乘以 API Key 所属分组倍率；如果配置了用户专属倍率，则优先使用用户专属倍率。
+        实际扣费以官网价格和请求使用的 API Key 分组倍率为准。
       </div>
 
       <div class="min-h-0 flex-1 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-dark-700 dark:bg-dark-800">
@@ -35,10 +35,10 @@
           <table class="w-full min-w-[1120px] table-fixed border-collapse text-sm">
             <thead class="sticky top-0 z-10 bg-gray-50/95 backdrop-blur dark:bg-dark-800/95">
               <tr class="border-b border-gray-200 text-left text-sm text-gray-600 dark:border-dark-700 dark:text-dark-300">
-                <th class="w-[300px] px-5 py-4">语言模型</th>
+                <th class="w-[300px] px-5 py-4">模型</th>
                 <th class="w-[180px] px-5 py-4">平台</th>
                 <th class="w-[320px] px-5 py-4">官网价格</th>
-                <th class="px-5 py-4">实际扣费</th>
+                <th class="px-5 py-4">分组倍率与备注</th>
               </tr>
             </thead>
 
@@ -62,13 +62,13 @@
             <tbody v-else class="divide-y divide-gray-100 dark:divide-dark-700/70">
               <tr
                 v-for="row in filteredRows"
-                :key="`${row.platform}:${row.name}`"
+                :key="row.key"
                 class="transition-colors hover:bg-gray-50/70 dark:hover:bg-dark-700/35"
               >
                 <td class="px-5 py-5 align-top">
                   <div class="text-gray-900 dark:text-white">{{ row.name }}</div>
-                  <div class="mt-1 text-xs text-gray-500 dark:text-dark-400">
-                    {{ row.channelNames.join(' / ') }}
+                  <div v-if="row.note" class="mt-1 text-xs text-gray-500 dark:text-dark-400">
+                    {{ row.note }}
                   </div>
                 </td>
 
@@ -87,8 +87,8 @@
                 <td class="px-5 py-5 align-top">
                   <div v-if="row.pricingLines.length > 0" class="space-y-1.5">
                     <div
-                      v-for="line in row.pricingLines"
-                      :key="line.label"
+                      v-for="(line, lineIndex) in row.pricingLines"
+                      :key="`${row.key}:${line.label}:${lineIndex}`"
                       class="grid grid-cols-[72px_1fr] gap-3 text-sm"
                     >
                       <span class="text-gray-500 dark:text-dark-400">{{ line.label }}</span>
@@ -99,12 +99,24 @@
                 </td>
 
                 <td class="px-5 py-5 align-top">
-                  <div class="text-gray-900 dark:text-white">
-                    {{ row.rateSummary }}
+                  <div v-if="row.groups.length > 0" class="space-y-2">
+                    <div
+                      v-for="(group, groupIndex) in row.groups"
+                      :key="`${row.key}:${group.label}:${groupIndex}`"
+                      class="rounded-md border border-gray-200 px-3 py-2 dark:border-dark-700"
+                    >
+                      <div class="flex flex-wrap items-center gap-2 text-sm text-gray-900 dark:text-white">
+                        <span>{{ group.label }}</span>
+                        <span v-if="group.multiplier" class="font-mono text-primary-600 dark:text-primary-400">
+                          {{ group.multiplier }}
+                        </span>
+                      </div>
+                      <div v-if="group.note" class="mt-1 text-xs text-gray-500 dark:text-dark-400">
+                        {{ group.note }}
+                      </div>
+                    </div>
                   </div>
-                  <div class="mt-1 text-xs text-gray-500 dark:text-dark-400">
-                    最终以请求使用的 API Key 分组为准
-                  </div>
+                  <span v-else class="text-sm text-gray-400">暂无分组</span>
                 </td>
               </tr>
             </tbody>
@@ -120,85 +132,67 @@ import { computed, onMounted, ref } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Icon from '@/components/icons/Icon.vue'
 import PlatformIcon from '@/components/common/PlatformIcon.vue'
-import userChannelsAPI, {
-  type UserAvailableChannel,
-  type UserSupportedModel,
-  type UserSupportedModelPricing,
-} from '@/api/channels'
-import userGroupsAPI from '@/api/groups'
 import { useAppStore } from '@/stores/app'
 import { extractApiErrorMessage } from '@/utils/apiError'
 import { platformBadgeClass } from '@/utils/platformColors'
-import { formatScaled } from '@/utils/pricing'
-import {
-  BILLING_MODE_IMAGE,
-  BILLING_MODE_PER_REQUEST,
-  BILLING_MODE_TOKEN,
-} from '@/constants/channel'
 import type { GroupPlatform } from '@/types'
+import {
+  getGroupLabel,
+  getGroupNote,
+  getModelGroups,
+  getModelName,
+  getModelPlatform,
+  getModelPriceFeed,
+  getModelPrices,
+  type ModelPriceEntry,
+} from '@/api/modelPriceFeed'
 
 interface PriceLine {
   label: string
   value: string
 }
 
+interface GroupLine {
+  label: string
+  multiplier: string
+  note: string
+}
+
 interface ModelPlazaRow {
+  key: string
   name: string
   platform: string
-  channelNames: string[]
+  note: string
   pricingLines: PriceLine[]
-  rateSummary: string
+  groups: GroupLine[]
 }
 
 const appStore = useAppStore()
 
-const channels = ref<UserAvailableChannel[]>([])
-const userGroupRates = ref<Record<number, number>>({})
+const models = ref<ModelPriceEntry[]>([])
 const loading = ref(false)
 const searchQuery = ref('')
 
 const rows = computed<ModelPlazaRow[]>(() => {
-  const byModel = new Map<string, {
-    name: string
-    platform: string
-    channelNames: Set<string>
-    pricing: UserSupportedModelPricing | null
-    rates: Set<number>
-  }>()
-
-  for (const channel of channels.value) {
-    for (const section of channel.platforms) {
-      const sectionRates = section.groups.map((group) => userGroupRates.value[group.id] ?? group.rate_multiplier)
-      for (const model of section.supported_models) {
-        const key = `${section.platform}:${model.name}`
-        const existing = byModel.get(key)
-        if (existing) {
-          existing.channelNames.add(channel.name)
-          for (const rate of sectionRates) existing.rates.add(rate)
-          if (!existing.pricing && model.pricing) existing.pricing = model.pricing
-          continue
-        }
-
-        byModel.set(key, {
-          name: model.name,
-          platform: section.platform,
-          channelNames: new Set([channel.name]),
-          pricing: model.pricing,
-          rates: new Set(sectionRates),
-        })
-      }
+  return models.value.map((model, index) => {
+    const name = getModelName(model)
+    const platform = getModelPlatform(model).toLowerCase()
+    return {
+      key: `${index}:${platform}:${name}`,
+      name,
+      platform,
+      note: model.note || model.description || '',
+      pricingLines: getModelPrices(model).map((line) => ({
+        label: line.label,
+        value: line.price,
+      })),
+      groups: getModelGroups(model).map((group) => ({
+        label: getGroupLabel(group),
+        multiplier: group.multiplier || '',
+        note: getGroupNote(group),
+      })),
     }
-  }
-
-  return Array.from(byModel.values())
-    .map((item) => ({
-      name: item.name,
-      platform: item.platform,
-      channelNames: Array.from(item.channelNames).sort((a, b) => a.localeCompare(b)),
-      pricingLines: buildPricingLines({ name: item.name, platform: item.platform, pricing: item.pricing }),
-      rateSummary: buildRateSummary(item.rates),
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name))
+  })
 })
 
 const filteredRows = computed(() => {
@@ -207,65 +201,20 @@ const filteredRows = computed(() => {
   return rows.value.filter((row) =>
     row.name.toLowerCase().includes(q) ||
     row.platform.toLowerCase().includes(q) ||
-    row.channelNames.some((name) => name.toLowerCase().includes(q))
+    row.note.toLowerCase().includes(q) ||
+    row.groups.some((group) =>
+      group.label.toLowerCase().includes(q) ||
+      group.multiplier.toLowerCase().includes(q) ||
+      group.note.toLowerCase().includes(q)
+    )
   )
 })
-
-function buildPricingLines(model: UserSupportedModel): PriceLine[] {
-  const pricing = model.pricing
-  if (!pricing) return []
-
-  if (pricing.billing_mode === BILLING_MODE_TOKEN) {
-    return [
-      { label: '输入', value: `${formatScaled(pricing.input_price, 1_000_000)} / 1M token` },
-      { label: '输出', value: `${formatScaled(pricing.output_price, 1_000_000)} / 1M token` },
-      { label: '缓存读取', value: `${formatScaled(pricing.cache_read_price, 1_000_000)} / 1M token` },
-    ]
-  }
-
-  if (pricing.billing_mode === BILLING_MODE_IMAGE) {
-    const lines: PriceLine[] = []
-    if (pricing.intervals.length > 0) {
-      for (const interval of pricing.intervals) {
-        lines.push({
-          label: interval.tier_label || formatTokenRange(interval.min_tokens, interval.max_tokens),
-          value: `${formatScaled(interval.per_request_price ?? pricing.image_output_price, 1)} / 张`,
-        })
-      }
-      return lines
-    }
-    return [{ label: '图片', value: `${formatScaled(pricing.image_output_price, 1)} / 张` }]
-  }
-
-  if (pricing.billing_mode === BILLING_MODE_PER_REQUEST) {
-    return [{ label: '请求', value: `${formatScaled(pricing.per_request_price, 1)} / 次` }]
-  }
-
-  return []
-}
-
-function formatTokenRange(min: number, max: number | null): string {
-  if (max == null) return `${min}+`
-  return String(max)
-}
-
-function buildRateSummary(rates: Set<number>): string {
-  void rates
-  return '官网价格 x key的分组倍率'
-}
 
 async function loadModelPlaza() {
   loading.value = true
   try {
-    const [list, rates] = await Promise.all([
-      userChannelsAPI.getAvailable(),
-      userGroupsAPI.getUserGroupRates().catch((err: unknown) => {
-        console.error('Failed to load user group rates:', err)
-        return {} as Record<number, number>
-      }),
-    ])
-    channels.value = list
-    userGroupRates.value = rates
+    const feed = await getModelPriceFeed()
+    models.value = Array.isArray(feed.models) ? feed.models : []
   } catch (err: unknown) {
     appStore.showError(extractApiErrorMessage(err, '加载模型广场失败'))
   } finally {
