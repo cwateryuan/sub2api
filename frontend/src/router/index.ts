@@ -215,7 +215,6 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-<<<<<<< HEAD
     path: '/model-plaza',
     name: 'ModelPlaza',
     component: () => import('@/views/user/ModelPlazaView.vue'),
@@ -224,7 +223,9 @@ const routes: RouteRecordRaw[] = [
       requiresAdmin: false,
       title: '模型广场',
       description: '查看当前可用语言模型和官网价格'
-=======
+    }
+  },
+  {
     path: '/batch-image',
     name: 'BatchImageGuide',
     alias: '/docs/batch-image',
@@ -235,7 +236,6 @@ const routes: RouteRecordRaw[] = [
       title: 'Batch Image Guide',
       titleKey: 'batchImageGuide.title',
       descriptionKey: 'batchImageGuide.description'
->>>>>>> upstream/main
     }
   },
   {
