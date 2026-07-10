@@ -215,6 +215,7 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+<<<<<<< HEAD
     path: '/model-plaza',
     name: 'ModelPlaza',
     component: () => import('@/views/user/ModelPlazaView.vue'),
@@ -223,6 +224,18 @@ const routes: RouteRecordRaw[] = [
       requiresAdmin: false,
       title: '模型广场',
       description: '查看当前可用语言模型和官网价格'
+=======
+    path: '/batch-image',
+    name: 'BatchImageGuide',
+    alias: '/docs/batch-image',
+    component: () => import('@/views/user/BatchImageGuideView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Batch Image Guide',
+      titleKey: 'batchImageGuide.title',
+      descriptionKey: 'batchImageGuide.description'
+>>>>>>> upstream/main
     }
   },
   {
@@ -832,6 +845,17 @@ router.beforeEach(async (to, _from, next) => {
     }
   }
 
+
+  // 公共设置可能尚未加载（App.vue 的 onMounted 异步拉取晚于首次导航，且纯静态部署
+  // 无 __APP_CONFIG__ 注入）。此时 cachedPublicSettings 为空会把 payment/risk_control
+  // 误判为“未启用”而错误拦截，故这里先确保设置加载完成。
+  if ((to.meta.requiresPayment || to.meta.requiresRiskControl) && !appStore.publicSettingsLoaded) {
+    try {
+      await appStore.fetchPublicSettings()
+    } catch (error) {
+      console.warn('Failed to load public settings in route guard', error)
+    }
+  }
 
   // Check payment requirement (internal payment system only)
   if (to.meta.requiresPayment) {
