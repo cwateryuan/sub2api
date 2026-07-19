@@ -810,6 +810,17 @@ func openAIImagesUpstreamErrorFromHTTP(statusCode int, header http.Header, body 
 	}
 }
 
+func isOpenAIImagesClientRequestError(statusCode int, body []byte) bool {
+	if statusCode != http.StatusBadRequest {
+		return false
+	}
+	errType := strings.ToLower(strings.TrimSpace(gjson.GetBytes(body, "error.type").String()))
+	code := strings.ToLower(strings.TrimSpace(extractUpstreamErrorCode(body)))
+	return errType == "invalid_request_error" ||
+		errType == "image_generation_user_error" ||
+		code == "content_policy_violation"
+}
+
 // handleOpenAIImagesErrorResponse is the non-failover error handler for the
 // images endpoints (/v1/images/generations and /v1/images/edits). Unlike the
 // generic handleErrorResponse — which collapses every non-failover upstream
@@ -875,7 +886,7 @@ func (s *OpenAIGatewayService) handleOpenAIImagesErrorResponse(
 	// If the account is not configured to handle this status code, fall back to
 	// a generic gateway error without exposing upstream internals (mirrors
 	// handleCompatErrorResponse).
-	if !account.ShouldHandleErrorCode(resp.StatusCode) {
+	if !account.ShouldHandleErrorCode(resp.StatusCode) && !isOpenAIImagesClientRequestError(resp.StatusCode, body) {
 		appendOpsUpstreamError(c, OpsUpstreamErrorEvent{
 			Platform:           account.Platform,
 			AccountID:          account.ID,

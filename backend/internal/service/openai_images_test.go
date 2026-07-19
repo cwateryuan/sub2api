@@ -922,6 +922,43 @@ func TestOpenAIGatewayServiceForwardImages_OAuthUpstreamHTTPErrorSurfacesRealErr
 	require.Contains(t, gjson.Get(rec.Body.String(), "error.message").String(), "Invalid value for 'size'")
 }
 
+func TestOpenAIImagesClientErrorBypassesCustomErrorCodeFallback(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodPost, "/v1/images/generations", nil)
+
+	account := &Account{
+		ID:       7,
+		Name:     "gateway-account",
+		Platform: PlatformOpenAI,
+		Type:     AccountTypeAPIKey,
+		Credentials: map[string]any{
+			"custom_error_codes_enabled": true,
+			"custom_error_codes":         []any{float64(http.StatusInternalServerError)},
+		},
+	}
+	response := &http.Response{
+		StatusCode: http.StatusBadRequest,
+		Header:     http.Header{"Content-Type": []string{"application/json"}},
+		Body: io.NopCloser(strings.NewReader(
+			`{"error":{"code":"content_policy_violation","message":"内容违规，调整提示词、参考图片或直接重试","param":null,"type":"invalid_request_error"},"request_id":"gateway-request-id"}`,
+		)),
+	}
+
+	result, err := (&OpenAIGatewayService{}).handleOpenAIImagesErrorResponse(context.Background(), response, c, account)
+	require.Nil(t, result)
+	var upstreamErr *OpenAIImagesUpstreamError
+	require.ErrorAs(t, err, &upstreamErr)
+	require.Equal(t, http.StatusBadRequest, upstreamErr.StatusCode)
+	require.Equal(t, "invalid_request_error", upstreamErr.ErrorType)
+	require.Equal(t, "content_policy_violation", upstreamErr.Code)
+	require.Equal(t, http.StatusBadRequest, recorder.Code)
+	require.Equal(t, "invalid_request_error", gjson.Get(recorder.Body.String(), "error.type").String())
+	require.Equal(t, "content_policy_violation", gjson.Get(recorder.Body.String(), "error.code").String())
+	require.NotContains(t, recorder.Body.String(), "Upstream gateway error")
+}
+
 func TestOpenAIGatewayServiceForwardImages_OAuthNonStreamModerationBlockedReturnsClientError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	body := []byte(`{"model":"gpt-image-2","prompt":"draw blocked image","response_format":"b64_json"}`)
