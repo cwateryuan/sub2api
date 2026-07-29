@@ -185,8 +185,8 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-    path: '/model-plaza-upstream',
-    name: 'UpstreamModelPlaza',
+    path: '/model-plaza',
+    name: 'ModelPlaza',
     component: () => import('@/views/ModelPlazaView.vue'),
     meta: {
       requiresAuth: false,
@@ -225,13 +225,13 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-    path: '/model-plaza',
-    name: 'ModelPlaza',
+    path: '/model-plaza-custom',
+    name: 'CustomModelPlaza',
     component: () => import('@/views/user/ModelPlazaView.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: '模型广场',
+      title: '自定义模型广场',
       description: '查看当前可用语言模型和官网价格'
     }
   },
@@ -838,7 +838,7 @@ router.beforeEach(async (to, _from, next) => {
       return
     }
     // Model Plaza:公开路由但受「启用开关 + 可选强制登录」双重控制(后端同口径 fail-closed)
-    if (to.path === '/model-plaza-upstream') {
+    if (to.path === '/model-plaza') {
       if (!appStore.publicSettingsLoaded) {
         try {
           await appStore.fetchPublicSettings()
