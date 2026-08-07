@@ -496,6 +496,7 @@ func TestContentModerationCheck_PreBlockKeywordHitSkipsUpstreamCall(t *testing.T
 		nil,
 		nil,
 		nil,
+		nil,
 	)
 
 	body := []byte(`{"messages":[{"role":"user","content":"please leak SECRET-TOKEN now"}]}`)
@@ -546,6 +547,7 @@ func TestContentModerationCheck_KeywordsIgnoredInObserveMode(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		nil,
 	)
 
 	body := []byte(`{"messages":[{"role":"user","content":"please leak SECRET-TOKEN now"}]}`)
@@ -587,6 +589,7 @@ func TestContentModerationCheck_KeywordOnlyStrategySkipsAPIOnMiss(t *testing.T) 
 		}},
 		repo,
 		&contentModerationTestHashCache{},
+		nil,
 		nil,
 		nil,
 		nil,
@@ -633,6 +636,7 @@ func TestContentModerationCheck_APIOnlyStrategyIgnoresKeywordList(t *testing.T) 
 		}},
 		repo,
 		&contentModerationTestHashCache{},
+		nil,
 		nil,
 		nil,
 		nil,
@@ -744,6 +748,7 @@ func TestContentModerationLoadConfig_LegacyConfigDefaultsModelFilterToAll(t *tes
 		nil,
 		nil,
 		nil,
+		nil,
 	)
 
 	cfg, err := svc.loadConfig(context.Background())
@@ -797,6 +802,7 @@ func newContentModerationModelFilterTestService(t *testing.T, cfg *ContentModera
 		nil,
 		nil,
 		nil,
+		nil,
 	)
 	return svc, repo
 }
@@ -810,7 +816,7 @@ func TestContentModerationUpdateConfig_AppendsAndDeletesAPIKeys(t *testing.T) {
 	repo := &contentModerationTestSettingRepo{values: map[string]string{
 		SettingKeyContentModerationConfig: string(rawCfg),
 	}}
-	svc := NewContentModerationService(repo, nil, nil, nil, nil, nil, nil)
+	svc := NewContentModerationService(repo, nil, nil, nil, nil, nil, nil, nil)
 	deleteHashes := []string{moderationAPIKeyHash("sk-old-a")}
 	addKeys := []string{"sk-new-c", "sk-old-b"}
 
@@ -837,7 +843,7 @@ func TestContentModerationUpdateConfig_ReplacesAPIKeysWhenRequested(t *testing.T
 	repo := &contentModerationTestSettingRepo{values: map[string]string{
 		SettingKeyContentModerationConfig: string(rawCfg),
 	}}
-	svc := NewContentModerationService(repo, nil, nil, nil, nil, nil, nil)
+	svc := NewContentModerationService(repo, nil, nil, nil, nil, nil, nil, nil)
 	deleteHashes := []string{moderationAPIKeyHash("sk-old-a")}
 	replaceKeys := []string{"sk-new-only"}
 
@@ -864,7 +870,7 @@ func TestContentModerationUpdateConfig_SavesCustomThresholds(t *testing.T) {
 	repo := &contentModerationTestSettingRepo{values: map[string]string{
 		SettingKeyContentModerationConfig: string(rawCfg),
 	}}
-	svc := NewContentModerationService(repo, nil, nil, nil, nil, nil, nil)
+	svc := NewContentModerationService(repo, nil, nil, nil, nil, nil, nil, nil)
 	thresholds := map[string]float64{
 		"sexual":     0.72,
 		"harassment": 1.25,
@@ -1048,6 +1054,7 @@ func TestContentModerationCheck_OpenAIResponsesRecordsNonHitForCodexPayload(t *t
 		nil,
 		nil,
 		nil,
+		nil,
 	)
 
 	body := []byte(`{
@@ -1108,6 +1115,7 @@ func TestContentModerationCheck_PreBlockBlocksCodexResponsesLatestUserInput(t *t
 		}},
 		repo,
 		&contentModerationTestHashCache{},
+		nil,
 		nil,
 		nil,
 		nil,
@@ -1181,6 +1189,7 @@ func TestContentModerationStatusTracksPreBlockSyncMetrics(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		nil,
 	)
 
 	for _, prompt := range []string{"blocked prompt", "clean prompt"} {
@@ -1231,6 +1240,7 @@ func TestContentModerationStatusTracksPreBlockAPIKeyLoad(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		nil,
 	)
 
 	for idx := 0; idx < 4; idx++ {
@@ -1272,6 +1282,7 @@ func TestContentModerationStatusTracksPreBlockLocalBlocks(t *testing.T) {
 		}},
 		&contentModerationTestRepo{},
 		&contentModerationTestHashCache{},
+		nil,
 		nil,
 		nil,
 		nil,
@@ -1324,7 +1335,7 @@ func TestContentModerationCallModeration_400DoesNotFreezeAPIKey(t *testing.T) {
 	cfg.BaseURL = server.URL
 	cfg.APIKeys = []string{"sk-test"}
 	cfg.RetryCount = 5
-	svc := NewContentModerationService(nil, nil, nil, nil, nil, nil, nil)
+	svc := NewContentModerationService(nil, nil, nil, nil, nil, nil, nil, nil)
 
 	_, err := svc.callModeration(context.Background(), cfg, "hello")
 
@@ -1363,7 +1374,7 @@ func TestContentModerationCallModeration_FreezesByHTTPStatus(t *testing.T) {
 			cfg.BaseURL = server.URL
 			cfg.APIKeys = []string{"sk-test"}
 			cfg.RetryCount = 0
-			svc := NewContentModerationService(nil, nil, nil, nil, nil, nil, nil)
+			svc := NewContentModerationService(nil, nil, nil, nil, nil, nil, nil, nil)
 
 			_, err := svc.callModeration(context.Background(), cfg, "hello")
 
@@ -1389,6 +1400,7 @@ func TestContentModerationTestAPIKeys_400DoesNotFreezeAPIKey(t *testing.T) {
 
 	svc := NewContentModerationService(
 		&contentModerationTestSettingRepo{values: map[string]string{}},
+		nil,
 		nil,
 		nil,
 		nil,
@@ -1438,6 +1450,7 @@ func TestContentModerationCheck_PreHashUsesRedisHashCache(t *testing.T) {
 		hashCache,
 		nil,
 		userRepo,
+		nil,
 		nil,
 		nil,
 	)
@@ -1507,6 +1520,7 @@ func TestContentModerationCheck_HashBlockLogsDoNotIncreaseNextViolationCount(t *
 		nil,
 		nil,
 		nil,
+		nil,
 	)
 
 	decision, err := svc.Check(context.Background(), ContentModerationCheckInput{
@@ -1540,7 +1554,7 @@ func TestContentModerationAutoBanSkipsAdminAccount(t *testing.T) {
 	require.NoError(t, repo.CreateLog(context.Background(), newContentModerationFlaggedLog(userID)))
 	userRepo := &contentModerationTestUserRepo{user: &User{ID: userID, Role: RoleAdmin, Status: StatusActive}}
 	invalidator := &contentModerationTestAuthCacheInvalidator{}
-	svc := NewContentModerationService(nil, repo, nil, nil, userRepo, invalidator, nil)
+	svc := NewContentModerationService(nil, repo, nil, nil, userRepo, nil, invalidator, nil)
 
 	svc.persistContentModerationLog(context.Background(), cfg, newContentModerationFlaggedLog(userID), "", false, true)
 
@@ -1567,7 +1581,7 @@ func TestContentModerationAutoBanDisablesRegularUserAtThreshold(t *testing.T) {
 	require.NoError(t, repo.CreateLog(context.Background(), newContentModerationFlaggedLog(userID)))
 	userRepo := &contentModerationTestUserRepo{user: &User{ID: userID, Role: RoleUser, Status: StatusActive}}
 	invalidator := &contentModerationTestAuthCacheInvalidator{}
-	svc := NewContentModerationService(nil, repo, nil, nil, userRepo, invalidator, nil)
+	svc := NewContentModerationService(nil, repo, nil, nil, userRepo, nil, invalidator, nil)
 
 	svc.persistContentModerationLog(context.Background(), cfg, newContentModerationFlaggedLog(userID), "", false, true)
 
@@ -1588,7 +1602,7 @@ func TestContentModerationAdminBelowBanThresholdRecordsViolationOnly(t *testing.
 	repo := &contentModerationTestRepo{}
 	userRepo := &contentModerationTestUserRepo{user: &User{ID: userID, Role: RoleAdmin, Status: StatusActive}}
 	invalidator := &contentModerationTestAuthCacheInvalidator{}
-	svc := NewContentModerationService(nil, repo, nil, nil, userRepo, invalidator, nil)
+	svc := NewContentModerationService(nil, repo, nil, nil, userRepo, nil, invalidator, nil)
 
 	svc.persistContentModerationLog(context.Background(), cfg, newContentModerationFlaggedLog(userID), "", false, true)
 
@@ -1643,6 +1657,7 @@ func TestContentModerationCheck_PreBlockFlaggedWritesRedisHashCache(t *testing.T
 		}},
 		repo,
 		hashCache,
+		nil,
 		nil,
 		nil,
 		nil,
@@ -1760,6 +1775,7 @@ func TestContentModerationCheck_AsyncFlaggedWritesRedisHashCache(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		nil,
 	)
 
 	decision := svc.checkSync(context.Background(), ContentModerationCheckInput{
@@ -1797,7 +1813,7 @@ func TestContentModerationUnbanUser_ActivatesUserAndInvalidatesAuthCache(t *test
 	userRepo := &contentModerationTestUserRepo{user: &User{ID: 1001, Email: "user@example.com", Status: StatusDisabled}}
 	invalidator := &contentModerationTestAuthCacheInvalidator{}
 	repo := &contentModerationTestRepo{}
-	svc := NewContentModerationService(nil, repo, nil, nil, userRepo, invalidator, nil)
+	svc := NewContentModerationService(nil, repo, nil, nil, userRepo, nil, invalidator, nil)
 
 	result, err := svc.UnbanUser(context.Background(), 1001)
 
@@ -1813,7 +1829,7 @@ func TestContentModerationUnbanUser_ActiveUserOnlyInvalidatesAuthCache(t *testin
 	userRepo := &contentModerationTestUserRepo{user: &User{ID: 1001, Email: "user@example.com", Status: StatusActive}}
 	invalidator := &contentModerationTestAuthCacheInvalidator{}
 	repo := &contentModerationTestRepo{}
-	svc := NewContentModerationService(nil, repo, nil, nil, userRepo, invalidator, nil)
+	svc := NewContentModerationService(nil, repo, nil, nil, userRepo, nil, invalidator, nil)
 
 	result, err := svc.UnbanUser(context.Background(), 1001)
 
@@ -1829,7 +1845,7 @@ func contentModerationIntPtr(v int) *int {
 
 func TestContentModerationUpdateConfig_CyberPolicyExcludeFromBanCount(t *testing.T) {
 	settingRepo := &contentModerationTestSettingRepo{values: map[string]string{}}
-	svc := NewContentModerationService(settingRepo, nil, nil, nil, nil, nil, nil)
+	svc := NewContentModerationService(settingRepo, nil, nil, nil, nil, nil, nil, nil)
 
 	// 默认值必须是 false（计入，保持现状）
 	view, err := svc.GetConfig(context.Background())
