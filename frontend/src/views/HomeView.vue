@@ -516,7 +516,6 @@ import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import Icon from '@/components/icons/Icon.vue'
 import { FeatureFlags, isFeatureFlagEnabled } from '@/utils/featureFlags'
 import { sanitizeUrl } from '@/utils/url'
-import { FeatureFlags, isFeatureFlagEnabled } from '@/utils/featureFlags'
 
 const { t } = useI18n()
 
